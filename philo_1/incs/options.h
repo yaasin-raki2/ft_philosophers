@@ -1,12 +1,26 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-typedef struct options_s {
-    int number_of_philosopher;
-    int time_to_die;
-    int time_to_eat;
-    int time_to_sleep;
-    int *number_of_times_each_philosopher_must_eat;
-} options_t;
+#include <pthread.h>
+
+enum status {
+    EATING,
+    SLEEPING,
+    THINKING
+};
+
+typedef struct ops_s {
+    int np;
+    int td;
+    int te;
+    int ts;
+} ops_t;
+
+typedef struct philo_s {
+    // int ne;
+    pthread_t th;
+    int id;
+    ops_t *ops;
+} philo_t;
 
 #endif
