@@ -18,9 +18,10 @@ typedef struct ops_s {
 
 typedef struct philo_s {
     // int ne;
+    ops_t *ops;
     pthread_t th;
     int id;
-    ops_t *ops;
+    pthread_mutex_t **forks;
 } philo_t;
 
 #endif

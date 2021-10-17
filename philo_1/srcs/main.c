@@ -16,20 +16,21 @@ void ops_init(ops_t *ops, char **av) {
     ops->ts = ft_atoi(av[4]);
 }
 
-void forks_init() {
-}
-
 void *routine(void *arg) {
     philo_t *philo = (philo_t *)arg;
     while (1) {
         printf("Philosopher %d is thinking\n", philo->id);
 
-        pthread_mutex_lock(&mtx);
+        pthread_mutex_lock(&(*philo->forks)[philo->id]);
+        printf("Philosopher %d has taken the %dth fork\n", philo->id, philo->id);
+        pthread_mutex_lock(&(*philo->forks)[(philo->id + 1) % (philo->ops->np)]);
+        printf("Philosopher %d has taken the %dth fork\n", philo->id, (philo->id + 1) % (philo->ops->np));
 
         printf("Philosopher %d is eating for %d seconds\n", philo->id, philo->ops->te);
         sleep(philo->ops->te);
 
-        pthread_mutex_unlock(&mtx);
+        pthread_mutex_unlock(&(*philo->forks)[philo->id]);
+        pthread_mutex_unlock(&(*philo->forks)[(philo->id + 1) % (philo->ops->np)]);
 
         printf("Philosopher %d is sleeping for %d seconds\n", philo->id, philo->ops->ts);
         sleep(philo->ops->ts);
@@ -46,14 +47,19 @@ int main(int ac, char *av[ac]) {
     ops_t ops;
     ops_init(&ops, av);
 
-    philo_t philos[ops.np];
-
-    pthread_mutex_init(&mtx, NULL);
-
+    pthread_mutex_t *forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * ops.np);
     int i = 0;
+    while (i < ops.np) {
+        pthread_mutex_init(&forks[i], NULL);
+        i++;
+    }
+
+    philo_t philos[ops.np];
+    i = 0;
     while (i < ops.np) {
         philos[i].id = i;
         philos[i].ops = &ops;
+        philos[i].forks = &forks;
         pthread_create(&(philos[i].th), NULL, &routine, &(philos[i]));
         i++;
     }
@@ -62,7 +68,9 @@ int main(int ac, char *av[ac]) {
     while (++i < ops.np)
         pthread_join(philos[i].th, NULL);
 
-    pthread_mutex_destroy(&mtx);
+    i = -1;
+    while (++i < ops.np)
+        pthread_mutex_destroy(&forks[i]);
 
     return EXIT_SUCCESS;
 }
