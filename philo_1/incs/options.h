@@ -2,6 +2,7 @@
 #define OPTIONS_H
 
 #include <pthread.h>
+#include <sys/time.h>
 
 enum status {
     EATING,
@@ -14,6 +15,8 @@ typedef struct ops_s {
     int td;
     int te;
     int ts;
+    struct timeval t0;
+    struct timeval t1;
 } ops_t;
 
 typedef struct philo_s {
@@ -22,6 +25,7 @@ typedef struct philo_s {
     pthread_t th;
     int id;
     pthread_mutex_t **forks;
+    struct timeval last_meal;
 } philo_t;
 
 #endif
